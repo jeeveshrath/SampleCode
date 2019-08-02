@@ -1,0 +1,36 @@
+Consumer.scala:
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.SparkConf
+import org.apache.spark.sql.functions
+import org.apache.spark.sql.Column
+import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.functions.lit
+import sqlContext.implicits._ 
+object Consumer {
+ def main(args: Array[String]): Unit = {
+   val spark = SparkSession.builder.enableHiveSupport() \
+        .appName("spark Order Line") \
+        .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") \
+        .config("spark.sql.parquet.compression.codec", "snappy") \
+        .getOrCreate()
+    val query_cold = "select timestamp,temperature  from cold where timestamp >= (sysdate-1/24)"
+    val query_hot = "select timestamp,temperature  from hot where timestamp >= (sysdate-1/24)"
+    
+    val cold_df = spark.read.format("jdbc").option("url", "jdbc:oracle:thin:xxx").option("dbtable", query_cold).option("user", "xx") \
+    .option("password", "password") \
+    .option("driver", "xx.xx.OracleDriver") \
+    .load()
+
+    val hot_df = spark.read.format("jdbc").option("url", "jdbc:oracle:thin:xxx").option("dbtable", query_cold).option("user", "xx") \
+    .option("password", "password") \
+    .option("driver", "xx.xx.OracleDriver") \
+    .load()
+
+    val cold_avg=cold_df.agg({"avg":"temprature"}).collect()[0][0]
+    val hot_avg=hot_df.agg(avg(temprature).alias("Avg_Hot"))
+    val final_df=hot_avg.withColumn("Avg_Cold",lit(cold_avg)).withColumn("Timestamp",lit(current_timestamp()))
+    final_df.write.mode("append").saveAsTable("Aggregates")
+
+
+   }
+   }

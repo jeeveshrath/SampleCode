@@ -1,0 +1,40 @@
+Producer.scala
+import scala.util.Random
+import scala.io.Source
+import java.io._
+import java.sql.DriverManager
+import java.sql.Connection
+import java.time.LocalDateTime
+object dataproducer{
+ def main(args: Array[String]):Unit ={
+  val driver = "oracle.jdbc.driver.OracleDriver"
+    val url = "jdbc:oracle:ssss"
+    val username = "username"
+    val password = "password"
+try {
+Class.forName(driver)
+connection = DriverManager.getConnection(url, username, password)
+  while (true){
+  val temp=Random.between(0, 10)
+  val temparature=Random.between(0, 100)
+  if (temp%2==0){
+  val sql_st="INSERT INTO HOT" + " VALUES (LocalDateTime.now(),temparature)"
+  }
+  else{
+  temparature=temparature-(2*temparature)
+  val sql_st="INSERT INTO COLD" + " VALUES (LocalDateTime.now(),temparature)"
+  }
+  statement.executeUpdate(sql_st)
+  connection.commit()
+  Thread.sleep(1000)
+
+  }
+  }catch {
+              case e: Throwable => e.printStackTrace
+            }
+                connection.close()
+
+ }
+
+}
+}
